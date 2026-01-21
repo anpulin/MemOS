@@ -26,7 +26,10 @@ class MilvusVecDB(BaseVecDB):
 
         # Create Milvus client
         self.client = MilvusClient(
-            uri=self.config.uri, user=self.config.user_name, password=self.config.password
+            uri=self.config.uri,
+            user=self.config.user_name,
+            password=self.config.password,
+            token=self.config.token,
         )
         self.schema = self.create_schema()
         self.index_params = self.create_index()

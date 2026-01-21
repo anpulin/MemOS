@@ -196,6 +196,9 @@ class NacosConfigManager:
 
     @classmethod
     def init(cls) -> None:
+        if os.getenv("REGISTRATION_SWITCH", "false").lower() == "false":
+            logger.info("Nacos registration is disabled, skipping Nacos initialization.")
+            return
         server_addr = os.getenv("NACOS_SERVER_ADDR")
         data_id = os.getenv("NACOS_DATA_ID")
         group = os.getenv("NACOS_GROUP", "DEFAULT_GROUP")
@@ -597,6 +600,7 @@ class APIConfig:
             "uri": os.getenv("MILVUS_URI", "http://localhost:19530"),
             "user_name": os.getenv("MILVUS_USER_NAME", "root"),
             "password": os.getenv("MILVUS_PASSWORD", "12345678"),
+            "token": os.getenv("MILVUS_TOKEN", ""),
         }
 
     @staticmethod

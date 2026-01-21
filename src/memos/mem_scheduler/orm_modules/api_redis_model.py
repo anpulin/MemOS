@@ -478,6 +478,8 @@ class APIRedisDBManager:
                 "port": redis_port,
                 "db": redis_db,
                 "decode_responses": True,
+                "ssl": os.getenv("MEMSCHEDULER_REDIS_SSL", "false").lower() == "true",
+                "ssl_cert_reqs": None,
             }
 
             if redis_password:
@@ -500,7 +502,14 @@ class APIRedisDBManager:
                     )
 
             # Create Redis connection
-            redis_client = redis.Redis(**redis_kwargs)
+            if "clustercfg" in redis_host or os.getenv("MEMSCHEDULER_REDIS_CLUSTER", "false").lower() == "true":
+                from redis.cluster import RedisCluster
+                cluster_kwargs = redis_kwargs.copy()
+                if "db" in cluster_kwargs:
+                    del cluster_kwargs["db"]
+                redis_client = RedisCluster(**cluster_kwargs)
+            else:
+                redis_client = redis.Redis(**redis_kwargs)
 
             # Test connection
             if not redis_client.ping():

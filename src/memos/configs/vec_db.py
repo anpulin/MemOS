@@ -52,6 +52,7 @@ class MilvusVecDBConfig(BaseVecDBConfig):
     )
     user_name: str = Field(default="", description="User name for Milvus connection")
     password: str = Field(default="", description="Password for Milvus connection")
+    token: str = Field(default="", description="API token for Milvus connection (e.g., Zilliz Cloud)")
 
 
 class VectorDBConfigFactory(BaseConfig):
