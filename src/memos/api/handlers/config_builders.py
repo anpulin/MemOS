@@ -90,61 +90,23 @@ def build_chat_llm_config() -> list[dict[str, Any]]:
         Validated chat LLM configuration dictionary
     """
     chat_model_list = os.getenv("CHAT_MODEL_LIST", "[]")
-    try:
-        models = json.loads(chat_model_list)
-        if not isinstance(models, list):
-            models = []
-        
-        parsed_configs = []
-        for cfg in models:
-            if isinstance(cfg, str):
-                # Handle case where item is a JSON string or just a model name
-                try:
-                    item = json.loads(cfg)
-                    if isinstance(item, dict):
-                        parsed_configs.append(item)
-                    else:
-                        # If it's a string that was JSON-parsed but not a dict, treat as model name
-                        parsed_configs.append({"model": cfg})
-                except json.JSONDecodeError:
-                    # If it's just a string, treat as model name
-                    parsed_configs.append({"model": cfg})
-            elif isinstance(cfg, dict):
-                parsed_configs.append(cfg)
-        
-        return [
-            {
-                "config_class": LLMConfigFactory.model_validate(
-                    {
-                        "backend": cfg.get("backend", "openai"),
-                        "config": {
-                            "api_key": cfg.get("api_key", os.getenv("OPENAI_API_KEY", "")),
-                            "api_base": cfg.get("api_base", os.getenv("OPENAI_API_BASE", "")),
-                            "model": cfg.get("model", os.getenv("MOS_CHAT_MODEL", "")),
-                        }
-                    }
-                ),
-                "support_models": cfg.get("support_models", None),
-            }
-            for cfg in parsed_configs
-        ]
-    except Exception as e:
-        logger.warning(f"Failed to parse CHAT_MODEL_LIST: {e}, using default model info")
-        return [
-            {
-                "config_class": LLMConfigFactory.model_validate(
-                    {
-                        "backend": "openai",
-                        "config": {
-                            "api_key": os.getenv("OPENAI_API_KEY", ""),
-                            "api_base": os.getenv("OPENAI_API_BASE", ""),
-                            "model": os.getenv("MOS_CHAT_MODEL", ""),
-                        }
-                    }
-                ),
-                "support_models": None,
-            }
-        ]
+    configs = json.loads(chat_model_list)
+    return [
+        {
+            "config_class": LLMConfigFactory.model_validate(
+                {
+                    "backend": cfg.get("backend", "openai"),
+                    "config": (
+                        {k: v for k, v in cfg.items() if k not in ["backend", "support_models"]}
+                    )
+                    if cfg
+                    else APIConfig.get_openai_config(),
+                }
+            ),
+            "support_models": cfg.get("support_models", None),
+        }
+        for cfg in configs
+    ]
 
 
 def build_embedder_config() -> dict[str, Any]:
