@@ -196,9 +196,6 @@ class NacosConfigManager:
 
     @classmethod
     def init(cls) -> None:
-        if os.getenv("REGISTRATION_SWITCH", "false").lower() == "false":
-            logger.info("Nacos registration is disabled, skipping Nacos initialization.")
-            return
         server_addr = os.getenv("NACOS_SERVER_ADDR")
         data_id = os.getenv("NACOS_DATA_ID")
         group = os.getenv("NACOS_GROUP", "DEFAULT_GROUP")
