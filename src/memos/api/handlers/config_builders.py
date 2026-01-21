@@ -89,9 +89,33 @@ def build_chat_llm_config() -> list[dict[str, Any]]:
     Returns:
         Validated chat LLM configuration dictionary
     """
-    configs = json.loads(os.getenv("CHAT_MODEL_LIST"))
-    return [
-        {
+    model_list_env = os.getenv("CHAT_MODEL_LIST")
+    if not model_list_env:
+        return []
+    
+    try:
+        configs = json.loads(model_list_env)
+    except Exception as e:
+        logger.error(f"Failed to parse CHAT_MODEL_LIST: {e}")
+        return []
+
+    if not isinstance(configs, list):
+        configs = [configs]
+
+    result = []
+    for cfg in configs:
+        # Handle case where cfg might be a string (e.g. double-escaped in CI)
+        if isinstance(cfg, str):
+            try:
+                cfg = json.loads(cfg)
+            except Exception:
+                logger.warning(f"Skipping invalid chat model config string: {cfg}")
+                continue
+        
+        if not isinstance(cfg, dict):
+            continue
+
+        result.append({
             "config_class": LLMConfigFactory.model_validate(
                 {
                     "backend": cfg.get("backend", "openai"),
@@ -103,9 +127,8 @@ def build_chat_llm_config() -> list[dict[str, Any]]:
                 }
             ),
             "support_models": cfg.get("support_models", None),
-        }
-        for cfg in configs
-    ]
+        })
+    return result
 
 
 def build_embedder_config() -> dict[str, Any]:
