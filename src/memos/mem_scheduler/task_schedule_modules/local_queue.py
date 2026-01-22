@@ -127,9 +127,9 @@ class SchedulerLocalQueue(RedisSchedulerModule):
         res = self.queue_streams[stream_key].get(
             block=block, timeout=timeout, batch_size=effective_batch_size
         )
-        logger.debug(
-            f"Retrieved {len(res)} messages from queue '{stream_key}'. Current size: {self.queue_streams[stream_key].qsize()}"
-        )
+        # logger.debug(
+        #     f"Retrieved {len(res)} messages from queue '{stream_key}'. Current size: {self.queue_streams[stream_key].qsize()}"
+        # )
         return res
 
     def get_nowait(self, stream_key: str, batch_size: int | None = 1) -> list[ScheduleMessageItem]:
@@ -146,7 +146,7 @@ class SchedulerLocalQueue(RedisSchedulerModule):
         Returns:
             List[ScheduleMessageItem]: Retrieved messages or empty list if queue is empty.
         """
-        logger.debug(f"get_nowait() called for {stream_key} with batch_size: {batch_size}")
+        # logger.debug(f"get_nowait() called for {stream_key} with batch_size: {batch_size}")
         return self.get(stream_key=stream_key, block=False, batch_size=batch_size)
 
     def get_messages(self, batch_size: int) -> list[ScheduleMessageItem]:
@@ -189,7 +189,7 @@ class SchedulerLocalQueue(RedisSchedulerModule):
         sizes = {stream: queue.qsize() for stream, queue in self.queue_streams.items()}
         total_size = sum(sizes.values())
         sizes["total_size"] = total_size
-        logger.debug(f"Current queue sizes: {sizes}")
+        # logger.debug(f"Current queue sizes: {sizes}")
         return sizes
 
     def clear(self, stream_key: str | None = None) -> None:
@@ -214,7 +214,7 @@ class SchedulerLocalQueue(RedisSchedulerModule):
         # But qsize() implementation above sums values from queue_streams, then adds total_size.
         # So sum(self.queue_streams.values().qsize()) is safer.
         total = sum(queue.qsize() for queue in self.queue_streams.values())
-        logger.debug(f"Total unfinished tasks across all queues: {total}")
+        # logger.debug(f"Total unfinished tasks across all queues: {total}")
         return total
 
     def get_stream_keys(self, stream_key_prefix: str | None = None) -> list[str]:
