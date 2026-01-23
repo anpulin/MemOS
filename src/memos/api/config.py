@@ -588,8 +588,8 @@ class APIConfig:
     @staticmethod
     def get_milvus_config():
         # Check if AWS token configuration is provided
-        aws_uri = os.getenv("MILVUS_AWS_URI")
-        aws_token = os.getenv("MILVUS_AWS_TOKEN")
+        aws_uri = os.getenv("MILVUS_URI")
+        aws_token = os.getenv("MILVUS_TOKEN")
 
         config = {
             "collection_name": [
