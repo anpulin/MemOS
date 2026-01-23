@@ -587,18 +587,33 @@ class APIConfig:
 
     @staticmethod
     def get_milvus_config():
-        return {
+        # Check if AWS token configuration is provided
+        aws_uri = os.getenv("MILVUS_AWS_URI")
+        aws_token = os.getenv("MILVUS_AWS_TOKEN")
+
+        config = {
             "collection_name": [
                 "explicit_preference",
                 "implicit_preference",
             ],
             "vector_dimension": int(os.getenv("EMBEDDING_DIMENSION", 1024)),
             "distance_metric": "cosine",
-            "uri": os.getenv("MILVUS_URI", "http://localhost:19530"),
-            "user_name": os.getenv("MILVUS_USER_NAME", "root"),
-            "password": os.getenv("MILVUS_PASSWORD", "12345678"),
-            "token": os.getenv("MILVUS_TOKEN", ""),
         }
+
+        # Use AWS token connection if type is "aws" and both URI and token are provided
+        if aws_uri and aws_token:
+            config["uri"] = aws_uri
+            config["token"] = aws_token
+            config["user_name"] = ""  # Not used for token auth
+            config["password"] = ""  # Not used for token auth
+        else:
+            # Use username/password connection (default)
+            config["uri"] = os.getenv("MILVUS_URI", "http://localhost:19530")
+            config["user_name"] = os.getenv("MILVUS_USER_NAME", "root")
+            config["password"] = os.getenv("MILVUS_PASSWORD", "12345678")
+            config["token"] = ""  # Not used for username/password auth
+
+        return config
 
     @staticmethod
     def get_polardb_config(user_id: str | None = None) -> dict[str, Any]:
